@@ -2,7 +2,7 @@ import re
 import tiktoken
 import torch
 from importlib.metadata import version
-from dataloader import GPTDatasetV1
+from dataset import GPTDatasetV1
 from tokenizer import SimpleTokenizerV1, SimpleTokenizerV2
 from torch.utils.data import Dataset, DataLoader
 
@@ -223,7 +223,7 @@ def abs_positional_encoding():
     token_embeddings = token_embedding_layer(inputs)
     print('\nToken Embeddings shape:\n', token_embeddings.shape)
 
-    # Create positional embedding tensor
+    # Create positional embedding layer
     context_length = max_length
     pos_embedding_layer = torch.nn.Embedding(context_length, output_dim)
     pos_embeddings = pos_embedding_layer(torch.arange(context_length))
@@ -235,4 +235,5 @@ def abs_positional_encoding():
 
 
 if __name__ == '__main__':
+    #embed()
     abs_positional_encoding()
