@@ -1,3 +1,4 @@
+import os
 import re
 import tiktoken
 import torch
@@ -207,7 +208,10 @@ def abs_positional_encoding():
     token_embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
 
     # Instantiate dataloader
-    with open('the-verdict.txt', 'r', encoding='utf-8') as f:
+    script_dir = os.path.dirname(__file__)
+    rel_path = '../the-verdict.txt'
+    abs_path = os.path.join(script_dir, rel_path)
+    with open(abs_path, 'r', encoding='utf-8') as f:
         raw_text = f.read()
     max_length = 4
     dataloader = create_dataloader_v1(
@@ -235,5 +239,4 @@ def abs_positional_encoding():
 
 
 if __name__ == '__main__':
-    #embed()
     abs_positional_encoding()

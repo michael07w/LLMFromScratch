@@ -63,6 +63,10 @@ def simple_self_attention():
     attn_weights = torch.softmax(attn_scores, dim=-1) 
     print('\nAttention Weights:\n', attn_weights)
 
+    # Calculate all context vectors
+    all_context_vecs = attn_weights @ inputs
+    print('\nAll Context Vectors:\n', all_context_vecs)
+
 
 # Self-attention w/ trainable weights
 def self_attn_trainable_weights():
@@ -108,5 +112,4 @@ def self_attn_trainable_weights():
 
 
 if __name__ == '__main__':
-    #simple_self_attention()
     self_attn_trainable_weights()
