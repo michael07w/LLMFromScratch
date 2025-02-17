@@ -123,18 +123,14 @@ def self_attn_trainable_weights():
 
 # Test SelfAttention_v1
 def test_self_attention():
-    d_in = 3
-    d_out = 2
-    sa_v1 = SelfAttention_v1(d_in, d_out)
+    sa_v1 = SelfAttention_v1(3, 2)
     print(sa_v1(inputs))
 
 
 # Test SelfAttention_v2
 def test_self_attention_v2():
     torch.manual_seed(789)
-    d_in = 3
-    d_out = 2
-    sa_v2 = SelfAttention_v2(d_in, d_out)
+    sa_v2 = SelfAttention_v2(3, 2)
     print(sa_v2(inputs))
 
 
@@ -186,12 +182,9 @@ def causal_attention():
 
 # Test CausalAttention
 def test_causal_attention():
-    # Represents 2 inputs w/ 6 tokens each; each token represented in 3 dims (2 x 6 x 3)
-    batch = torch.stack((inputs, inputs), dim=0)
-    d_in = 3
-    d_out = 2
+    batch = torch.stack((inputs, inputs), dim=0)    # 2 sequences; 6 tokens each; token embedded in 3 dims (2,6,3)
     context_length = batch.shape[1]
-    ca = CausalAttention(d_in, d_out, context_length, 0.0)
+    ca = CausalAttention(3, 2, context_length, 0.0)
     context_vecs = ca(batch)
     print('context_vecs.shape:', context_vecs.shape)
     print('\nContext Vectors:\n', context_vecs)

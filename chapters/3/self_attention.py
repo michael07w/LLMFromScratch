@@ -5,7 +5,6 @@ import torch.nn as nn
 # Considered naive approach
 class SelfAttention_v1(nn.Module):
     # Initializes trainable weight matrices (W_query, W_key, W_value)
-    # Each weight matrix is of size: [d_in, d_out]
     def __init__(self, d_in, d_out):
         super().__init__()
         self.W_query = nn.Parameter(torch.rand(d_in, d_out))
