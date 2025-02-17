@@ -1,6 +1,8 @@
 import torch
+from self_attention import SelfAttention_v1, SelfAttention_v2, CausalAttention
 
 
+torch.manual_seed(123)
 inputs = torch.tensor(
     [[0.43, 0.15, 0.89], # Your     (x_1)
      [0.55, 0.87, 0.66], # journey  (x_2)
@@ -84,6 +86,10 @@ def self_attn_trainable_weights():
     W_key = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
     W_value = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
 
+    # DEBUG
+    print('W_query:', W_query)
+    # END DEBUG
+
     # Compute query, key, and value vectors for 2nd element
     query_2 = x_2 @ W_query
     key_2 = x_2 @ W_key
@@ -110,6 +116,92 @@ def self_attn_trainable_weights():
     attn_weights_2 = torch.softmax((attn_scores_2 / d_k**0.5), dim=-1)
     print('\nAttention Weights (x_2):\n', attn_weights_2)
 
+    # Compute the context vector
+    context_vec2 = attn_weights_2 @ values
+    print('\nContext Vector (z_2):', context_vec2)
+
+
+# Test SelfAttention_v1
+def test_self_attention():
+    d_in = 3
+    d_out = 2
+    sa_v1 = SelfAttention_v1(d_in, d_out)
+    print(sa_v1(inputs))
+
+
+# Test SelfAttention_v2
+def test_self_attention_v2():
+    torch.manual_seed(789)
+    d_in = 3
+    d_out = 2
+    sa_v2 = SelfAttention_v2(d_in, d_out)
+    print(sa_v2(inputs))
+
+
+# Exercise 3.1
+# Transfer weight matrices from an instance of SelfAttention_v2 to an instance of SelfAttention_v1
+def exercise_3_1():
+    torch.manual_seed(789)
+    d_in = 3
+    d_out = 2
+    sa_v2 = SelfAttention_v2(d_in, d_out)
+    sa_v1 = SelfAttention_v1(d_in, d_out)
+
+    # Assign weight matrics from v2 to v1
+    sa_v1.W_query.data = sa_v2.W_query.weight.T
+    sa_v1.W_key.data = sa_v2.W_key.weight.T
+    sa_v1.W_value.data = sa_v2.W_value.weight.T
+
+    # Complete forward pass and print results
+    print('v1:\n', sa_v1(inputs))
+    print('\nv2:\n', sa_v2(inputs))
+
+
+# Play with causal attention/masking methods
+def causal_attention():
+    torch.manual_seed(789)
+    sa_v2 = SelfAttention_v2(3, 2)
+    
+    # Compute attention weights
+    queries = sa_v2.W_query(inputs)
+    keys = sa_v2.W_key(inputs)
+    values = sa_v2.W_value(inputs)
+    attn_scores = queries @ keys.T
+    attn_weights = torch.softmax((attn_scores / keys.shape[-1]**0.5), dim=-1)
+    print('Attention Weights:\n', attn_weights)
+
+    # (NAIVE) Mask the attention weights and renormalize
+    masked_attn_weights = torch.tril(attn_weights)
+    row_sums = masked_attn_weights.sum(dim=-1, keepdim=True)
+    masked_attn_weights = masked_attn_weights / row_sums
+    print('\nMasked Attention Weights (naive):\n', masked_attn_weights)
+
+    # Use property of softmax to more efficiently calculate masked attention weights
+    context_length = attn_scores.shape[-1]
+    mask = torch.triu(torch.ones(context_length, context_length), diagonal=1)
+    masked = attn_scores.masked_fill(mask.bool(), -torch.inf)
+    attn_weights = torch.softmax((masked / keys.shape[-1]**0.5), dim=-1)
+    print('\nMasked Attention Weights:\n', attn_weights)
+
+
+# Test CausalAttention
+def test_causal_attention():
+    # Represents 2 inputs w/ 6 tokens each; each token represented in 3 dims (2 x 6 x 3)
+    batch = torch.stack((inputs, inputs), dim=0)
+    d_in = 3
+    d_out = 2
+    context_length = batch.shape[1]
+    ca = CausalAttention(d_in, d_out, context_length, 0.0)
+    context_vecs = ca(batch)
+    print('context_vecs.shape:', context_vecs.shape)
+    print('\nContext Vectors:\n', context_vecs)
+
+
 
 if __name__ == '__main__':
-    self_attn_trainable_weights()
+    #self_attn_trainable_weights()
+    #test_self_attention()
+    #test_self_attention_v2()
+    #exercise_3_1()
+    #causal_attention()
+    test_causal_attention()
